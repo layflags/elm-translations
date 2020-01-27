@@ -4,8 +4,8 @@ Generate type safe translations for your Elm app.
 
 ## Usage
 
-```
-$ npx elm-translations --help
+```sh
+$ npx elm-translations --help # see all possible options
 $ npx elm-translations --from your-translations.json > src/Translations.elm
 ```
 
