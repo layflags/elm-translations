@@ -1,0 +1,6 @@
+{
+  "foo-bar": "Foo bar",
+  "baz": {
+    "foo_": "Bar"
+  }
+}

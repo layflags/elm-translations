@@ -1,0 +1,9 @@
+{
+  "keywords": "elm,typesafe,translations",
+  "navigation": {
+    "contact": "Contact",
+    "admin": {
+      "authInfo": "Your are logged in as {{username}} ({{role}})"
+    }
+  }
+}

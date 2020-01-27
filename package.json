@@ -1,0 +1,30 @@
+{
+  "name": "elm-translations",
+  "version": "1.0.0",
+  "description": "Type safe translations for Elm",
+  "main": "index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layflags/elm-translations.git"
+  },
+  "keywords": [
+    "elm",
+    "i18n",
+    "translation",
+    "json",
+    "typesafe"
+  ],
+  "author": "Lay Flags <code@layfla.gs>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/layflags/elm-translations/issues"
+  },
+  "homepage": "https://github.com/layflags/elm-translations#readme",
+  "dependencies": {
+    "meow": "^6.0.0"
+  }
+}
