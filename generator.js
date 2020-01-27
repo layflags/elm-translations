@@ -21,7 +21,8 @@ module.exports = generate;
 
 // HELPERS
 
-const isValidModuleName = value => /^[A-Z][a-zA-Z0-9]*$/.test(value);
+const isValidModuleName = value =>
+  /^[A-Z][a-zA-Z0-9]*(\.[A-Z][a-zA-Z0-9]+)*$/.test(value);
 
 const isValidKey = value => /^[a-z][a-zA-Z0-9]*$/.test(value);
 
