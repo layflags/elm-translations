@@ -5,7 +5,7 @@
   "main": "index.js",
   "bin": "./index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./index.js -f nope.json || ./index.js -f test-invalid.json || ./index.js -f test-malformed.json || ./index.js -f test-valid.json -r nope || ./index.js -f test-valid.json -r keywords || ./index.js -f test-valid.json -m nope || ./index.js -f test-valid.json -r navigation.admin -m I18n.Translations && echo '\n[OK] Tests passed.'"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/layflags/elm-translations#readme",
   "dependencies": {
+    "dot-prop": "^5.2.0",
+    "is-plain-obj": "^2.1.0",
     "meow": "^6.0.0"
   }
 }

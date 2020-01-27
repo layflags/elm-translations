@@ -4,6 +4,8 @@
 
 const meow = require("meow");
 const fs = require("fs");
+const dotProp = require("dot-prop");
+const isPlainObj = require("is-plain-obj");
 const generate = require("./generator");
 
 const cli = meow(
@@ -14,6 +16,7 @@ const cli = meow(
     Options
       --from,   -f  path to your translations file (JSON)
       --module, -m  custom Elm module name (default: Translations)
+      --root,   -r  key path to use as root (optional)
       --version     show version
 
     Examples
@@ -30,12 +33,17 @@ const cli = meow(
         type: "string",
         alias: "m",
         default: "Translations"
+      },
+      root: {
+        type: "string",
+        alias: "r",
+        default: ""
       }
     }
   }
 );
 
-const { from, module: moduleName } = cli.flags;
+const { from, module: moduleName, root } = cli.flags;
 
 if (from) {
   let data;
@@ -52,8 +60,20 @@ if (from) {
   try {
     translations = JSON.parse(data);
   } catch (err) {
-    console.error(`Cannot parse file ${from}\n- ${err}`);
+    console.error(`Cannot parse file: ${from}\n- ${err}`);
     process.exit(4);
+  }
+
+  if (root) {
+    const value = dotProp.get(translations, root);
+    if (isPlainObj(value)) {
+      translations = value;
+    } else {
+      console.error(
+        `Cannot use root: ${root}\n- Error: value of key '${root}' is not an object`
+      );
+      process.exit(5);
+    }
   }
 
   try {
