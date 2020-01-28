@@ -4,6 +4,7 @@
 
 const meow = require("meow");
 const fs = require("fs");
+const path = require('path')
 const dotProp = require("dot-prop");
 const isPlainObj = require("is-plain-obj");
 const generate = require("./generator");
@@ -38,14 +39,33 @@ const cli = meow(
         type: "string",
         alias: "r",
         default: ""
+      },
+      out: {
+        type: "string",
+        alias: "o",
+        default: ""
       }
     }
   }
 );
 
-const { from, module: moduleName, root } = cli.flags;
+const { from, module: moduleName, root , out: outputFolder} = cli.flags;
+
 
 if (from) {
+  const resolveTranslationsPath = (moduleName, baseDir = __dirname)  => {
+    const filePath = path.resolve(baseDir, path.join(...moduleName.split('.')))
+    return `${filePath}.elm`
+
+  }
+  const writeFile = (filePath) => {
+    const fileFolder = path.dirname(filePath)
+    if(!fs.existsSync(fileFolder)) {
+      fs.mkdirSync(fileFolder, { recursive: true })
+    }
+    return fs.writeFileSync(filePath, elmCode, 'utf8')
+
+  }
   let data;
   let translations;
   let elmCode;
@@ -83,7 +103,17 @@ if (from) {
     process.exit(5);
   }
 
-  console.log(elmCode);
+  if (outputFolder) {
+    try {
+      writeFile(resolveTranslationsPath(moduleName, path.resolve(outputFolder)), data)
+    } catch(err) {
+      console.error(`Cannot create translations file\n- ${err}`);
+      process.exit(6);
+
+    }
+  } else {
+    console.log(elmCode);
+  }
 } else {
   cli.showHelp();
 }
