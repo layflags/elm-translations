@@ -18,6 +18,7 @@ const cli = meow(
       --from,   -f  path to your translations file (JSON)
       --module, -m  custom Elm module name (default: Translations)
       --root,   -r  key path to use as root (optional)
+      --out,    -o  path to a folder where the generated translations should be saved (optional)
       --version     show version
 
     Examples
@@ -64,8 +65,8 @@ if (from) {
       fs.mkdirSync(fileFolder, { recursive: true })
     }
     return fs.writeFileSync(filePath, elmCode, 'utf8')
-
   }
+
   let data;
   let translations;
   let elmCode;
@@ -109,7 +110,6 @@ if (from) {
     } catch(err) {
       console.error(`Cannot create translations file\n- ${err}`);
       process.exit(6);
-
     }
   } else {
     console.log(elmCode);
