@@ -4,10 +4,10 @@
 
 const meow = require("meow");
 const fs = require("fs");
-const path = require('path')
+const path = require("path");
 const dotProp = require("dot-prop");
 const isPlainObj = require("is-plain-obj");
-const generate = require("./generator");
+const { Elm } = require("./codegen.js");
 
 const cli = meow(
   `
@@ -50,70 +50,84 @@ const cli = meow(
   }
 );
 
-const { from, module: moduleName, root , out: outputFolder} = cli.flags;
+const codegen = (moduleName, jsonData) => {
+  const worker = Elm.Main.init({ flags: [moduleName, jsonData] });
+  return new Promise((resolve, reject) => {
+    worker.ports.succeed.subscribe(resolve);
+    worker.ports.fail.subscribe(reject);
+  });
+};
 
+const resolveTranslationsPath = (moduleName, baseDir = __dirname) => {
+  const filePath = path.resolve(baseDir, path.join(...moduleName.split(".")));
+  return `${filePath}.elm`;
+};
 
-if (from) {
-  const resolveTranslationsPath = (moduleName, baseDir = __dirname)  => {
-    const filePath = path.resolve(baseDir, path.join(...moduleName.split('.')))
-    return `${filePath}.elm`
-
+const writeFile = (filePath, content) => {
+  const fileFolder = path.dirname(filePath);
+  if (!fs.existsSync(fileFolder)) {
+    fs.mkdirSync(fileFolder, { recursive: true });
   }
-  const writeFile = (filePath) => {
-    const fileFolder = path.dirname(filePath)
-    if(!fs.existsSync(fileFolder)) {
-      fs.mkdirSync(fileFolder, { recursive: true })
+  return fs.writeFileSync(filePath, content, "utf8");
+};
+
+const run = async () => {
+  const { from, module: moduleName, root, out: outputFolder } = cli.flags;
+
+  if (from) {
+    let data;
+    let translations;
+    let elmCode;
+
+    try {
+      data = fs.readFileSync(from, "utf8");
+    } catch (err) {
+      console.error(`Cannot read file: ${from}`);
+      process.exit(3);
     }
-    return fs.writeFileSync(filePath, elmCode, 'utf8')
-  }
 
-  let data;
-  let translations;
-  let elmCode;
+    try {
+      translations = JSON.parse(data);
+    } catch (err) {
+      console.error(`Cannot parse file: ${from}\n- ${err}`);
+      process.exit(4);
+    }
 
-  try {
-    data = fs.readFileSync(from, "utf8");
-  } catch (err) {
-    console.error(`Cannot read file: ${from}`);
-    process.exit(3);
-  }
+    if (root) {
+      const value = dotProp.get(translations, root);
+      if (isPlainObj(value)) {
+        translations = value;
+      } else {
+        console.error(
+          `Cannot use root: ${root}\n- Error: value of key '${root}' is not an object`
+        );
+        process.exit(5);
+      }
+    }
 
-  try {
-    translations = JSON.parse(data);
-  } catch (err) {
-    console.error(`Cannot parse file: ${from}\n- ${err}`);
-    process.exit(4);
-  }
-
-  if (root) {
-    const value = dotProp.get(translations, root);
-    if (isPlainObj(value)) {
-      translations = value;
-    } else {
-      console.error(
-        `Cannot use root: ${root}\n- Error: value of key '${root}' is not an object`
-      );
+    try {
+      elmCode = await codegen(moduleName, translations);
+    } catch (err) {
+      console.error(`Cannot generate Elm code\n- ${err}`);
       process.exit(5);
     }
-  }
 
-  try {
-    elmCode = generate(translations, moduleName);
-  } catch (err) {
-    console.error(`Cannot generate Elm code\n- ${err}`);
-    process.exit(5);
-  }
-
-  if (outputFolder) {
-    try {
-      writeFile(resolveTranslationsPath(moduleName, path.resolve(outputFolder)), data)
-    } catch(err) {
-      console.error(`Cannot create translations file\n- ${err}`);
-      process.exit(6);
+    if (outputFolder) {
+      try {
+        writeFile(
+          resolveTranslationsPath(moduleName, path.resolve(outputFolder)),
+          elmCode
+        );
+      } catch (err) {
+        console.error(`Cannot create translations file\n- ${err}`);
+        process.exit(6);
+      }
+    } else {
+      console.log(elmCode);
     }
   } else {
-    console.log(elmCode);
+    cli.showHelp();
   }
-} else {
-  cli.showHelp();
-}
+};
+
+run();
