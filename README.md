@@ -1,151 +1,227 @@
 # elm-translations
 
-Generate type safe translations for your Elm app.
+**Generate type safe translations for your Elm app**
+
+`elm-translations` is a command line script that generates an Elm module from your JSON translation files. This module just includes a `Translations` type (nested Record), a JSON decoder and a JSON parser, but not the actual translation data. So you just need to generate the Elm code once and then use for all the languages you want to support in your app by e.g. loading them dynamically at runtime.
+
+## Features
+
+### ✅ Type safe
+
+Won't compile if you try to access the wrong keys in your Elm code
+
+### ✅ Nesting support
+
+Let's you organize your translations easily
+
+### ✅ Variable substitutions
+
+Just pass a Record and never forget to set a variable again
 
 ## Usage
 
 ```sh
-$ npx elm-translations --help # see all possible options
-$ npx elm-translations --from your-translations.json > src/Translations.elm
+# get a preview of the generated Elm code
+$ npx elm-translations --from your-translations.json
+
+# generate Elm code and store it here: ./src/Translations.elm
+$ npx elm-translations --from your-translations.json --out src
+
+# or use a custom module name - will be stored here: ./src/I18n/Trans.elm
+$ npx elm-translations --from your-translations.json --module I18n.Trans --out src
+
+# see all possible options
+$ npx elm-translations --help
+
+  Type safe translations for Elm
+
+  Usage
+    $ elm-translations
+
+  Options
+    --from,   -f  path to your translations file (JSON)
+    --module, -m  custom Elm module name (default: Translations)
+    --root,   -r  key path to use as root (optional)
+    --out,    -o  path to a folder where the generated translations should be saved (optional)
+    --version     show version
+
+  Examples
+    $ elm-translations --from en.json
+    $ elm-translations -f en.json -m I18n.Translations -o src
 ```
 
-### From `your-translations.json`
+## Examples
 
-```json
-{
-  "keywords": "elm,typesafe,translations",
-  "navigation": {
-    "contact": "Contact",
-    "admin": {
-      "authInfo": "Your are logged in as {{username}} ({{role}})"
+### Passing translation data via `flags`
+
+1. Create your `Translations.elm` file with e.g.:
+
+```sh
+$ npx elm-translations -f en.json -o src
+```
+
+2. In your Html page pass the translation data:
+
+```html
+...
+<script>
+  Elm.Main.init({
+    node: document.getElementById("elm"),
+    flags: {
+      // your translation data inlined by e.g. EJS or Handlebars:
+      // ...
+      welcome: "Welcome {{name}}!",
+      home: {
+        intro: "This App is about ..."
+      }
+      // ...
     }
-  }
-}
+  });
+</script>
+...
 ```
 
-**Requirements:**
-
-- use only lower camel case keys
-- use only lower camel case variables
-- use only `String` values
-
-### To generated `src/Translations.elm`
+3. In your Elm app use the translations:
 
 ```elm
-module Translations exposing (Translations, parse)
+module Main exposing (..)
 
-import Json.Decode exposing (Decoder, Error, Value, map, string, succeed)
-import Json.Decode.Pipeline exposing (required)
-
-
-type alias Translations_navigation_admin =
-    { authInfo : { username : String, role : String } -> String
-    }
-
-
-decodeTranslations_navigation_admin : Decoder Translations_navigation_admin
-decodeTranslations_navigation_admin =
-    let
-        substitute_authInfo content args =
-            content
-                |> String.replace "{{username}}" args.username
-                |> String.replace "{{role}}" args.role
-    in
-    succeed Translations_navigation_admin
-        |> required "authInfo" (map substitute_authInfo string)
-
-
-type alias Translations_navigation =
-    { contact : String
-    , admin : Translations_navigation_admin
-    }
-
-
-decodeTranslations_navigation : Decoder Translations_navigation
-decodeTranslations_navigation =
-    succeed Translations_navigation
-        |> required "contact" string
-        |> required "admin" decodeTranslations_navigation_admin
-
-
-type alias Translations =
-    { keywords : String
-    , navigation : Translations_navigation
-    }
-
-
-decodeTranslations : Decoder Translations
-decodeTranslations =
-    succeed Translations
-        |> required "keywords" string
-        |> required "navigation" decodeTranslations_navigation
-
-
-parse : Value -> Result Error Translations
-parse =
-    Json.Decode.decodeValue decodeTranslations
-```
-
-### Use it in your Elm app like e.g.:
-
-```elm
-module Main exposing (main)
-
-import Browser
-import Html exposing (..)
 import Json.Decode
-import Translations
+import Json.Encode
+import Translations exposing (Translations)
 
 
-main : Program Flags Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+-- ...
 
 
 type Model
-    = Failed String
-    | Initialised Translations.Translations
+    = Initialized Translations
+    | Failed Json.Decode.Error
 
 
-type alias Flags =
-    { translations : Json.Decode.Value }
-
-
-init : Flags -> ( Model, Cmd Msg )
-init { translations } =
-    case Translations.parse translations of
+init : Json.Encode.Value -> ( Model, Cmd Msg )
+init flags =
+    case Translations.parse flags of
         Ok t ->
-            ( Initialised t
-            , Cmd.none
-            )
+            ( Initialized t, Cmd.none )
 
-        Err _ ->
-            ( Failed "Parsing translations failed"
-            , Cmd.none
-            )
+        Err error ->
+            ( Failed error, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     case model of
-        Failed message ->
-            Html.text <| "Initialisation failed: " ++ message
-
-        Initialised t ->
-            p []
-                [ Html.text t.keywords
-                , br [] []
-                , Html.text <|
-                    t.navigation.admin.authInfo
-                        { username = "John D."
-                        , role = "Admin"
-                        }
+        Initialized t ->
+            div []
+                [ h1 [] [ text <| t.welcome { name = "John" } ]
+                , p [] [ text t.home.intro ]
                 ]
 
-...
+        Failed error ->
+            p [] [ text "Error: Cannot proccess translation data" ]
+
+
+-- ...
+
+```
+
+### Dynamically fetching translation data
+
+There's an example available in the git repository. To let it run locally on your machine, follow these steps:
+
+1. Clone the respository
+
+```sh
+$ git clone git@github.com:layflags/elm-translations.git
+```
+
+2. Go to the example folder
+
+```sh
+$ cd elm-translations/example
+```
+
+3. Generate the `Translations.elm` module
+
+```sh
+$ npx elm-translations --from en.json --out src
+```
+
+4. Start Elm Reactor and go to http://localhost:8000/src/Main.elm
+
+```sh
+$ elm reactor
+```
+
+## JSON file requirements
+
+### Use only lower camel case keys!
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+
+```json
+{ "buttonTitle": "Submit" }
+```
+
+```json
+{ "headline": "Welcome to Elm!" }
+```
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+
+```json
+{ "button-title": "Submit" }
+```
+
+```json
+{ "Headline": "Submit" }
+```
+
+### Use only lower camel case variables!
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+
+```json
+{ "welcome": "Hi {{name}}!" }
+```
+
+```json
+{ "welcome": "Hi {{firstName}} {{lastName}}!" }
+```
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+
+```json
+{ "welcome": "Hi {{Name}}!" }
+```
+
+```json
+{ "welcome": "Hi {{first_Name}} {{last_Name}}!" }
+```
+
+### Use only `String` values (nesting possible)!
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+
+```json
+{ "buttonTitle": "Submit" }
+```
+
+```json
+{ "form": { "buttonTitle": "Submit" } }
+```
+
+<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+
+```json
+{ "count": 3 }
+```
+
+```json
+{ "isVisible": true }
+```
+
+```json
+{ "name": null }
 ```
