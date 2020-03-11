@@ -1,5 +1,7 @@
 codegen.js
 elm-stuff/
+example/src/Translations.elm
+example/dist
 
 # Logs
 logs

@@ -1,0 +1,6 @@
+{
+  "title": "Welcome!",
+  "authentication": {
+    "info": "Your are logged in as {{username}} ({{role}})."
+  }
+}
