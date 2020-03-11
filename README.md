@@ -154,6 +154,8 @@ $ npx elm-translations --from en.json --out src
 $ elm reactor
 ```
 
+Or just visit: https://elm-translations-example.surge.sh/
+
 ## JSON file requirements
 
 ### Use only lower camel case keys!
