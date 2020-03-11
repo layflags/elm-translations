@@ -67,7 +67,9 @@ toCode moduleName data =
         file
             (generateModule moduleName)
             imports
-            (parseFunDecl :: generateTypeAndDecoderDeclList [] data)
+            ([ decoderFunDecl, parseFunDecl ]
+                ++ generateTypeAndDecoderDeclList [] data
+            )
             (Just comment)
 
 
@@ -150,6 +152,7 @@ generateModule name =
     normalModule (String.split "." name)
         [ typeOrAliasExpose "Translations"
         , funExpose "parse"
+        , funExpose "decoder"
         ]
 
 
@@ -181,6 +184,22 @@ imports =
                 ]
         )
     ]
+
+
+{-|
+
+    decoder : Decoder Translations
+    decoder =
+        decodeTranslations
+
+-}
+decoderFunDecl : Declaration
+decoderFunDecl =
+    funDecl Nothing
+        (Just (typeVar "Decoder Translations"))
+        "decoder"
+        []
+        (apply [ fun "decodeTranslations" ])
 
 
 {-|
