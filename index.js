@@ -23,7 +23,7 @@ const cli = meow(
 
     Examples
       $ elm-translations --from en.json
-      $ elm-translations -f en.json -m I18n.Translations
+      $ elm-translations -f en.json -m I18n.Translations -o src
 `,
   {
     flags: {
