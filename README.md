@@ -158,7 +158,7 @@ $ elm reactor
 
 ### Use only lower camel case keys!
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+**🟢 YES**
 
 ```json
 { "buttonTitle": "Submit" }
@@ -168,7 +168,7 @@ $ elm reactor
 { "headline": "Welcome to Elm!" }
 ```
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+**🔴 NO**
 
 ```json
 { "button-title": "Submit" }
@@ -180,7 +180,7 @@ $ elm reactor
 
 ### Use only lower camel case variables!
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+**🟢 YES**
 
 ```json
 { "welcome": "Hi {{name}}!" }
@@ -190,7 +190,7 @@ $ elm reactor
 { "welcome": "Hi {{firstName}} {{lastName}}!" }
 ```
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+**🔴 NO**
 
 ```json
 { "welcome": "Hi {{Name}}!" }
@@ -202,7 +202,7 @@ $ elm reactor
 
 ### Use only `String` values (nesting possible)!
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:green;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">Yes</span>
+**🟢 YES**
 
 ```json
 { "buttonTitle": "Submit" }
@@ -212,7 +212,7 @@ $ elm reactor
 { "form": { "buttonTitle": "Submit" } }
 ```
 
-<span style="color:white;font-weight:bold;border-radius:50%;background-color:red;display:inline-flex;width:2.6rem;height:2.6rem;align-items:center;justify-content:center">No</span>
+**🔴 NO**
 
 ```json
 { "count": 3 }
