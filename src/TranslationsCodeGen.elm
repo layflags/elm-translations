@@ -28,9 +28,13 @@ type alias TTree =
 
 generateCode : String -> JE.Value -> Result JD.Error String
 generateCode moduleName jsonData =
-    -- TODO: validate format of moduleName
-    parseJson jsonData
-        |> Result.map (toCode moduleName)
+    if String.split "." moduleName |> List.all isUpperCamelCase then
+        parseJson jsonData |> Result.map (toCode moduleName)
+
+    else
+        Err <|
+            JD.Failure "Module name is not in upper camel case"
+                (JE.string moduleName)
 
 
 
