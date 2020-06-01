@@ -2,7 +2,7 @@
 
 **Generate type safe translations for your Elm app**
 
-`elm-translations` is a command line script that generates an Elm module from your JSON translation files. This module just includes a `Translations` type (nested Record), a JSON decoder and a JSON parser, but not the actual translation data. So you just need to generate the Elm code once and then use for all the languages you want to support in your app by e.g. loading them dynamically at runtime.
+`elm-translations` is a command line script that generates an Elm module from your JSON translation files. This module just includes a `Translations` type (nested Record), a JSON decoder and a JSON parser, but not the actual translation data. So you just need to generate the Elm code once and then use it for all the languages you want to support in your app by e.g. loading them dynamically at runtime.
 
 ## Features
 
@@ -72,10 +72,10 @@ $ npx elm-translations -f en.json -o src
       // ...
       welcome: "Welcome {{name}}!",
       home: {
-        intro: "This App is about ..."
-      }
+        intro: "This App is about ...",
+      },
       // ...
-    }
+    },
   });
 </script>
 ...
